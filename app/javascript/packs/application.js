@@ -21,6 +21,7 @@ import App from '../../../ten-athletes-client/src/app'
 
 document.addEventListener('DOMContentLoaded', () => {
   ReactDOM.render(
+    <App/>,
     document.body.appendChild(document.createElement('div')),
   )
 })
