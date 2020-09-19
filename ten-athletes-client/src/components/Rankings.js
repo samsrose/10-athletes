@@ -184,6 +184,16 @@ export default class Rankings extends Component {
 
       }
       if(sport.id === this.state.unsetID){
+        let unsetIncluded = false
+        this.state.sportMatches.forEach((match) => {
+          // console.log(`matchid: ${match.id}, unsetID: ${this.state.unsetID}, same: ${match.id === this.state.unsetID}`)
+          if(parseInt(match.id) === this.state.unsetID){
+            unsetIncluded = true
+          }
+        });
+        if(!unsetIncluded) {
+          sportList.push(<div className="sportsListItem" id={sport.id} key={`sport${sport.id}`} name={sport.name}>{sport.name}</div>)
+        }
         nextSport = sport.name
       }
     });
