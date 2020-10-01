@@ -17,12 +17,17 @@ export default class NewEvent extends Component {
       opponentRating: 0,
       error: "",
       opponentName: "",
-      opponentUsername: ""
+      opponentUsername: "",
+      teammate: "",
+      teammateMatches: [],
+      teammates: [],
+      teamRating: 0
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.fillSportName = this.fillSportName.bind(this);
     this.fillOpponent = this.fillOpponent.bind(this);
+    this.fillTeammate = this.fillTeammate.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.findSports = this.findSports.bind(this);
   }
@@ -45,16 +50,20 @@ export default class NewEvent extends Component {
   handleChange(event) {
     let sportMatches = [...this.state.sportMatches]
     let opponentMatches = [...this.state.opponentMatches]
+    let teammateMatches = [...this.state.teammateMatches]
     if(event.target.name === 'sport'){
       sportMatches = this.findSports(event.target.value)
     } else if (event.target.name === 'opponent') {
       opponentMatches = this.findOpponent(event.target.value)
     }
-
+    if(event.target.name === 'teammate'){
+      teammateMatches = this.findOpponent(event.target.value)
+    }
     this.setState({
       [event.target.name]: event.target.value,
       sportMatches,
-      opponentMatches
+      opponentMatches,
+      teammateMatches
     });
   }
 
@@ -311,6 +320,38 @@ export default class NewEvent extends Component {
     });
   }
 
+  fillTeammate(event){
+    let teammateRating = 0
+    this.state.users.forEach((teammate) => {
+
+      if (teammate.id === parseInt(event.target.attributes[0].value)) {
+        teammate.sports.forEach((sport) => {
+          if (sport.id === this.state.sportID) {
+            teammateRating = sport.rating
+          }
+        });
+
+      }
+    });
+    let teammates = [...this.state.teammates]
+    teammates.push({name: event.target.attributes[1].value, username: event.target.attributes[2].value, id: event.target.attributes[0].value, rating: teammateRating})
+    let teamRating = 0
+    let ratedMembers = 0
+    teammates.forEach((teammate) => {
+      if(teammate.rating !== 0){
+        teamRating += teammate.rating
+        ratedMembers += 1
+      }
+    });
+    teamRating = teamRating / ratedMembers
+
+    this.setState({
+      teammate: "",
+      teammates,
+      teamRating
+    });
+  }
+
 //   handleSelectWinner(event){
 //   this.setState({
 //     [event.target.name]: event.target.value
@@ -542,7 +583,8 @@ ratingChange(player){
       p2ID: event.p2ID,
       p2Name: event.p2Name,
       p2Username: event.p2Username,
-      winner
+      winner,
+      teammateYesNo: 'n'
     }
     let user = {
       username: this.props.user.username
@@ -636,18 +678,6 @@ ratingChange(player){
 
         this.addEventsToEventsDatabase(event)
         this.updateCurrentUser(event, 1)
-        // const updateOpponent = this.updateCurrentUser(event, 2)
-        // this.setState({
-        //   error: "",
-        //   sportID: 0,
-        //   opponentID: 0,
-        //   sport: "",
-        //   opponent: "",
-        //   sportMatches: [],
-        //   opponentMatches: [],
-        //   initial: "",
-        //   opponentRating: 0
-        // })
       }
     } else {
       this.setState({ error: "You need to select a valid opponent and a valid sport."})
@@ -658,6 +688,8 @@ ratingChange(player){
     let sportList = []
     let opponentList = []
     let setInitialRating = ""
+    let teammateList = []
+    let teammateMatchList = []
     // let sportMatches = this.findSports()
     // let opponentMatches = this.findOpponent()
     let initialRating = false
@@ -702,7 +734,21 @@ ratingChange(player){
     });
   }
 
+  // )
+    this.state.teammateMatches.forEach((match) => {
+      teammateMatchList.push(<li data-teammateid={match.id} style={{listStyle: 'none'}} key={`teammateid-${match.id}`} opponent={match.name} username={match.username}>{match.name} {match.rating === 0 ? '' : `- ${match.rating.toFixed(2)}`}</li>)
+    });
+    teammateMatchList = <ul className="teammateSearchList" key={`teammateSlot${1}`} onClick={this.fillTeammate} > {teammateMatchList} </ul>
 
+    let team = []
+    if(this.state.teammates.length > 0){
+      this.state.teammates.forEach((teammate, i) => {
+        let rating = 0
+        teammate.rating !== 0 ? rating = teammate.rating : rating = this.state.teamRating
+        team.push(<li key={`teammate#${i}`}>{teammate.name}: {rating}</li>)
+      });
+      team = <div><h3>Team: Average rating: {this.state.teamRating}</h3>{team}</div>
+    }
 
     return(
     <div>
@@ -726,6 +772,19 @@ ratingChange(player){
         >{sportList}</ul>
         {setInitialRating}
         <br/>
+        <h3>Teammates</h3>
+          <input
+            type="text"
+            key="teammate"
+            name="teammate"
+            minLength = '3'
+            style={{backgroundColor: this.state.backgroundColor}}
+            placeholder="Teammate Name"
+            value={this.state.newTeammate}
+            onChange = {this.handleChange}
+            required
+          />
+        {teammateMatchList}
         <h3>Opponent</h3>
         <input
           type="text"
@@ -740,6 +799,7 @@ ratingChange(player){
         <ul className="opponentSearchList" onClick={this.fillOpponent}
         >{opponentList}</ul>
         <br />
+        {team}
           <h3> Who won?</h3>
             <input type="radio" id="I won" name="winner" onClick={this.handleChange} value= '1' /> <b>I won</b>
             <br />
