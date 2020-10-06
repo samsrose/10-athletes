@@ -6,8 +6,7 @@ const Home = (props) => {
 
   if(props.loggedInStatus){
     return(
-      <div style={{textAlign: 'center'}} >
-        <h2 className="welcome">Welcome to 10 Athletes {props.user.username}</h2>
+      <div >
         <NewEvent history={props.history} user={props.user}/>
       </div>
     )

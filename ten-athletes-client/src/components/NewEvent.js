@@ -21,7 +21,9 @@ export default class NewEvent extends Component {
       teammate: "",
       teammateMatches: [],
       teammates: [],
-      teamRating: 0
+      teamRating: 0,
+      opponents: [],
+      opponentTeamRating: 0
     }
 
     this.handleChange = this.handleChange.bind(this);
@@ -30,6 +32,7 @@ export default class NewEvent extends Component {
     this.fillTeammate = this.fillTeammate.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.findSports = this.findSports.bind(this);
+    this.removePlayer = this.removePlayer.bind(this);
   }
 
   componentDidMount() {
@@ -65,6 +68,20 @@ export default class NewEvent extends Component {
       opponentMatches,
       teammateMatches
     });
+  }
+  removePlayer(position, teammateOrOpponent){
+    let teammates = []
+    if(teammateOrOpponent === 'teammate'){
+      teammates = [...this.state.teammates]
+      let tmp = teammates;
+      tmp.splice(position, 1);
+      this.setState({teammates: tmp})
+    } else {
+      teammates = [...this.state.opponents]
+      let tmp = teammates;
+      tmp.splice(position, 1);
+      this.setState({opponents: tmp})
+    }
   }
 
   findSports(sportName){
@@ -190,25 +207,18 @@ export default class NewEvent extends Component {
 
   findOpponent(opponentSearch){
     let sportSet = this.state.sportID !== 0
+    let teammates = this.state.teammates
+    let opponents = this.state.opponents
     var userID = this.props.user.id
     var opponentMatches = [];
     if(opponentSearch.length >= 3){
       var list = this.state.users;
-      // var opponentSearch = this.state.opponent;
       list.forEach(function(opponent){
         let name = `${opponent.firstname} ${opponent.lastname}`
         let mismatch = false
-        // [...Array(name.length - opponentSearch.length + 1)].forEach((_, i) => {
-        //
-        // });
-        // [...Array(name.length - opponentSearch.length + 1)].forEach((item, i) => {
-        //   console.log('hi')
-        // });
+
         Array.from(Array((name.length-opponentSearch.length + 1) > 0 ? name.length-opponentSearch.length + 1 : 0).keys()).forEach((i) => {
-        // });
 
-
-        // for(var i = 0; i < (name.length - opponentSearch.length + 1); i++){
           mismatch = false;
             [...Array(opponentSearch.length)].forEach((_,j) => {
             if(opponentSearch[j].toUpperCase() !== name[i+j].toUpperCase()){
@@ -222,6 +232,16 @@ export default class NewEvent extends Component {
                 duplicate = true;
               }
             })
+            teammates.forEach((teammate) => {
+              if(teammate.id === opponent.id){
+                duplicate = true
+              }
+            });
+            opponents.forEach((person) => {
+              if(person.id === opponent.id){
+                duplicate = true
+              }
+            });
             if(!duplicate && opponent.id !== userID){
               let rating = 0
               if(sportSet) {
@@ -253,6 +273,16 @@ export default class NewEvent extends Component {
                 duplicate = true;
               }
             })
+            teammates.forEach((teammate) => {
+              if(teammate.id === opponent.id){
+                duplicate = true
+              }
+            });
+            opponents.forEach((person) => {
+              if(person.id === opponent.id){
+                duplicate = true
+              }
+            });
             if(!duplicate && opponent.id !== userID){
               let rating = 0
               if(sportSet) {
@@ -275,80 +305,50 @@ export default class NewEvent extends Component {
 
   fillOpponent(event){
     // var temp = this.state.sports[this.state.sportPos]
-    var opponentRating = 0
-    // var athleteRating = this.state.sports[this.state.athleteRatingPos]
-    this.state.users.forEach((opponent) => {
-      if (opponent.id === event.target.attributes[0].value) {
-        opponent.sports.forEach((sport) => {
-          if (sport.id === this.state.sportID) {
-            opponentRating = sport.rating
-          }
-        });
-
-      }
-    });
-
-    // if (opponentRating === 0){
-    //   opponentRating = this.state.currentUserRating
-    // }
-    // console.log(temp)
-    // temp["participants"].forEach((participant, i) => {
-    //   if(participant["id"] === event.target.attributes[1].value){
-    //     opponentPositionInSport = i
-    //   }
-    //   if (participant["id"] === this.props.user.id) {
-    //     currentUserPositionInSport = i
+    // var opponentRating = 0
+    // // var athleteRating = this.state.sports[this.state.athleteRatingPos]
+    // this.state.users.forEach((opponent) => {
+    //   if (opponent.id === event.target.attributes[0].value) {
+    //     opponent.sports.forEach((sport) => {
+    //       if (sport.id === this.state.sportID) {
+    //         opponentRating = sport.rating
+    //       }
+    //     });
+    //
     //   }
     // });
 
-    // athleteRating["participants"].forEach((participant, i) => {
-    //   if(participant["id"] === event.target.attributes[1].value){
-    //     opponentPositionInAthlete = i
-    //   }
-    //   if (participant["id"] === this.props.user.id){
-    //     currentUserPositionInAthlete = i
-    //   }
-    // });
+    let opponents = [...this.state.opponents]
+    opponents.push({name: event.target.attributes[1].value, username: event.target.attributes[2].value, id: parseInt(event.target.attributes[0].value), sports: this.state.opponentMatches[parseInt(event.target.attributes[3].value)].sports})
 
-    // console.log(this.calculateAthleteRating(this.state.sports[this.state.athleteRatingPos]["participants"][currentUserPositionInAthlete]["sports"]))
+
     this.setState({
-      opponent: event.target.attributes[1].value,
-      opponentID: parseInt(event.target.attributes[0].value),
-      opponentRating: opponentRating,
-      opponentName: event.target.attributes[1].value,
-      opponentUsername: event.target.attributes[2].value,
+      opponent: "",
+      opponents,
+      opponentMatches: []
     });
   }
 
   fillTeammate(event){
-    let teammateRating = 0
-    this.state.users.forEach((teammate) => {
-
-      if (teammate.id === parseInt(event.target.attributes[0].value)) {
-        teammate.sports.forEach((sport) => {
-          if (sport.id === this.state.sportID) {
-            teammateRating = sport.rating
-          }
-        });
-
-      }
-    });
+    // let teammateRating = 0
+    // this.state.users.forEach((teammate) => {
+    //
+    //   if (teammate.id === parseInt(event.target.attributes[0].value)) {
+    //     teammate.sports.forEach((sport) => {
+    //       if (sport.id === this.state.sportID) {
+    //         teammateRating = sport.rating
+    //       }
+    //     });
+    //
+    //   }
+    // });
     let teammates = [...this.state.teammates]
-    teammates.push({name: event.target.attributes[1].value, username: event.target.attributes[2].value, id: event.target.attributes[0].value, rating: teammateRating})
-    let teamRating = 0
-    let ratedMembers = 0
-    teammates.forEach((teammate) => {
-      if(teammate.rating !== 0){
-        teamRating += teammate.rating
-        ratedMembers += 1
-      }
-    });
-    teamRating = teamRating / ratedMembers
+    teammates.push({name: event.target.attributes[1].value, username: event.target.attributes[2].value, id: parseInt(event.target.attributes[0].value), sports: this.state.teammateMatches[parseInt(event.target.attributes[3].value)].sports})
 
     this.setState({
       teammate: "",
       teammates,
-      teamRating
+      teammateMatches: []
     });
   }
 
@@ -684,11 +684,79 @@ ratingChange(player){
     }
   }
 
+  teammateList(sport, teammateOrOpponent, homeTeamRating){
+    let team = []
+    let teammates = []
+    let teamText = ""
+    let teamRating = 0
+    if(teammateOrOpponent === 'teammate'){
+      teammates = [...this.state.teammates]
+      teamText = "My "
+    } else{
+      teammates = [...this.state.opponents]
+      teamText = "Opposing "
+    }
+    if(this.state.sportMatches.length > 0 || this.state.sportID !== 0){
+      let ratedMembers = 0
+      let unratedTeammates = []
+      teammates.forEach((teammate, i) => {
+        let rating = 0
+        teammate.sports.forEach((sportPlayed) => {
+          if(parseInt(sportPlayed.id) === parseInt(sport) && sportPlayed.rating){
+            rating = sportPlayed.rating
+          }
+        });
+        if(rating !== 0){
+          teamRating += rating
+          ratedMembers += 1
+          team.push(<li style={{listStyle: 'none'}} key={`${teammateOrOpponent}#${i}`}><button onClick={() => this.removePlayer(i, teammateOrOpponent)}>X</button>{teammate.name}: {rating.toFixed(2)}</li>)
+        } else {
+          unratedTeammates.push(i)
+          team.push(teammate.name)
+        }
+      });
+      if(teammateOrOpponent === 'teammate'){
+        let rating = 0
+        let a = team.length
+        this.props.user.sports.forEach((sportPlayed) => {
+          if(parseInt(sportPlayed.id) === parseInt(sport) && sportPlayed.rating){
+            teamRating += sportPlayed.rating
+            ratedMembers += 1
+            rating = sportPlayed.rating
+            team.push(<li style={{listStyle: 'none'}} key='player'><button onClick={() => this.removePlayer(a, teammateOrOpponent)}>X</button>{this.props.user.firstname + ' ' + this.props.user.lastname}: {rating.toFixed(2)}</li>)
+          }
+        });
+        if(rating === 0) {
+          unratedTeammates.push(unratedTeammates.length)
+          team.push(`${this.props.user.firstname} ${this.props.user.lastname}`)
+        }
+      }
+      if(ratedMembers > 0){
+        teamRating = teamRating / ratedMembers
+        unratedTeammates.forEach((position) => {
+          team[position] = <li style={{listStyle: 'none'}} key={`${teammateOrOpponent}#${position}`}><button onClick={() => this.removePlayer(position, teammateOrOpponent)}>X</button>{team[position]}: {teamRating.toFixed(2)}*</li>
+        });
+
+      } else {
+        teamRating = homeTeamRating
+      }
+      team = [<div style={{float: 'left', paddingLeft: '10%'}}><h3>{teamText}Team: Average rating: {teamRating.toFixed(2)}</h3>{team}</div>, teamRating]
+    } else{
+      teammates.forEach((teammate, i) => {
+        team.push(<li style={{listStyle: 'none'}} key={`${teammateOrOpponent}-${i}`}><button onClick={() => this.removePlayer(i, teammateOrOpponent)}>X</button>{teammate.name}</li>)
+      });
+      if(teammateOrOpponent === 'teammate'){
+        team.push(<li style={{listStyle: 'none'}} key={'player'}>{this.props.user.firstname} {this.props.user.lastname}</li>)
+      }
+      team = [<div style={{float: 'left', paddingLeft: '10%'}}><h3>{teamText}Team:</h3>{team}</div>, teamRating]
+    }
+    return team
+  }
+
   render() {
     let sportList = []
     let opponentList = []
     let setInitialRating = ""
-    let teammateList = []
     let teammateMatchList = []
     // let sportMatches = this.findSports()
     // let opponentMatches = this.findOpponent()
@@ -727,38 +795,52 @@ ratingChange(player){
       </div>
     }
     if(this.state.opponentMatches){
-    this.state.opponentMatches.forEach((user) => {
-      // if(user.id !== this.props.user.id){
-        opponentList.push(<li data-opponentid={user.id} style={{listStyle: 'none'}} key={user.id} opponent={user.name} username={user.username}>{user.name} {user.rating === 0 ? '' : `- ${user.rating.toFixed(2)}`}</li>)
-      // }
+    this.state.opponentMatches.forEach((user, i) => {
+      opponentList.push(<li data-opponentid={user.id} style={{listStyle: 'none'}} key={user.id} opponent={user.name} username={user.username} position={i}>{user.name} {user.rating === 0 ? '' : `- ${user.rating.toFixed(2)}`}</li>)
     });
   }
 
-  // )
-    this.state.teammateMatches.forEach((match) => {
-      teammateMatchList.push(<li data-teammateid={match.id} style={{listStyle: 'none'}} key={`teammateid-${match.id}`} opponent={match.name} username={match.username}>{match.name} {match.rating === 0 ? '' : `- ${match.rating.toFixed(2)}`}</li>)
+    this.state.teammateMatches.forEach((match, i) => {
+      teammateMatchList.push(<li data-teammateid={match.id} style={{listStyle: 'none'}} key={`teammateid-${match.id}`} opponent={match.name} username={match.username} position={i}>{match.name} {match.rating === 0 ? '' : `- ${match.rating.toFixed(2)}`}</li>)
     });
     teammateMatchList = <ul className="teammateSearchList" key={`teammateSlot${1}`} onClick={this.fillTeammate} > {teammateMatchList} </ul>
-
-    let team = []
-    if(this.state.teammates.length > 0){
-      this.state.teammates.forEach((teammate, i) => {
-        let rating = 0
-        teammate.rating !== 0 ? rating = teammate.rating : rating = this.state.teamRating
-        team.push(<li key={`teammate#${i}`}>{teammate.name}: {rating}</li>)
-      });
-      team = <div><h3>Team: Average rating: {this.state.teamRating}</h3>{team}</div>
+    let sport = 0
+    if(this.state.sportMatches.length > 0){
+      sport = this.state.sportMatches[0].id
+    } else {
+      sport = this.state.sportID
     }
+    let team = []
+    let opponents = []
+    let homeTeamRating = 0
+    if(this.state.teammates.length > 0){
+      team = this.teammateList(sport, 'teammate', 0)
+      homeTeamRating = team.pop()
+      team = team[0]
+    }
+    if(this.state.opponents.length > 0){
+      opponents = this.teammateList(sport, 'opponent', homeTeamRating)
+      opponents = opponents[0]
+    }
+
+
 
     return(
     <div>
-    <form onSubmit={this.handleSubmit}>
+    <div style={{position: 'absolute', width: '25%', paddingLeft: '5%'}}>
+    {team}
+    </div>
+    <div style={{position: 'absolute', paddingLeft: '70%', width: '25%', paddingRight: '5%'}}>
+    {opponents}
+    </div>
+    <form style={{textAlign: 'center'}} onSubmit={this.handleSubmit}>
       <br/>
         <u>
         <h2> Report Results </h2>
         </u>
         <br/>
         <h3>Sport</h3>
+
         <input
           type="name"
           name="sport"
@@ -772,7 +854,7 @@ ratingChange(player){
         >{sportList}</ul>
         {setInitialRating}
         <br/>
-        <h3>Teammates</h3>
+        <h3>Teammates (optional)</h3>
           <input
             type="text"
             key="teammate"
@@ -785,7 +867,7 @@ ratingChange(player){
             required
           />
         {teammateMatchList}
-        <h3>Opponent</h3>
+        <h3>Opponent(s)</h3>
         <input
           type="text"
           name="opponent"
@@ -799,7 +881,6 @@ ratingChange(player){
         <ul className="opponentSearchList" onClick={this.fillOpponent}
         >{opponentList}</ul>
         <br />
-        {team}
           <h3> Who won?</h3>
             <input type="radio" id="I won" name="winner" onClick={this.handleChange} value= '1' /> <b>I won</b>
             <br />
@@ -816,6 +897,7 @@ ratingChange(player){
         <br/>
         <br/>
       </form>
+
     </div>
   )}
 }
