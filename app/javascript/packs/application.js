@@ -15,13 +15,3 @@ require("channels")
 //
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
-
-import ReactDOM from 'react-dom'
-import App from '../../../ten-athletes-client/src/app'
-
-document.addEventListener('DOMContentLoaded', () => {
-  ReactDOM.render(
-    <App/>,
-    document.body.appendChild(document.createElement('div')),
-  )
-})
