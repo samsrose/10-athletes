@@ -9,25 +9,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
   end
 
   allow do
-    origins 'https://10athletes.netlify.app/logged_in'
-
-    resource '*',
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true
-  end
-
-  allow do
-    origins 'https://10athletes.netlify.app/rankings'
-
-    resource '*',
-      headers: :any,
-      methods: [:get, :post, :put, :patch, :delete, :options, :head],
-      credentials: true
-  end
-
-  allow do
-    origins 'https://10athletes.netlify.app/sports'
+    origins 'https://10athletes.netlify.app'
 
     resource '*',
       headers: :any,
