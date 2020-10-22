@@ -78,6 +78,11 @@ test:
 #   production:
 #     url: <%= ENV['DATABASE_URL'] %>
 #
+
+staging:
+  <<: *default
+  database: ten_athletes_api_staging
+  
 production:
   <<: *default
   url: "postgres://wxjlvisnldofkx:6371012546e5a5d6a52351e6d278a8757f32150abbe6da46bc515c3162359a1b@ec2-23-20-70-32.compute-1.amazonaws.com:5432/d1echctuslljnk"
