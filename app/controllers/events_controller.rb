@@ -16,7 +16,7 @@ class EventsController < ApplicationController
     rating = 0
 
     teamRatings.each do |playerRating|
-      if playerRating !== 0
+      if playerRating != 0
         count = count + 1
         rating = playerRating + rating
       end
@@ -88,7 +88,7 @@ class EventsController < ApplicationController
         status: :created,
         event: @event
       }
-      
+
     else
       render json: {
         status: 500,
